@@ -9,7 +9,19 @@ class Set {
     fun addCard(flashCard: FlashCard){
         set.add(flashCard)
     }
+    fun getName(): String{
+        return this.setName
+    }
     fun changeName(newName: String){
         setName = newName
+    }
+    fun  getCard(i: Int): FlashCard{
+        return set[i]
+    }
+    fun changeCard(flashCard: FlashCard, int: Int){
+        set[int] = flashCard
+    }
+    fun getSize(): Int{
+        return set.size
     }
 }

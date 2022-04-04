@@ -8,4 +8,13 @@ class FlashCard {
     fun addSide(side: Side){
         flashCard.add(side)
     }
+    fun getSide(i: Int): Side{
+        return flashCard[i]
+    }
+    fun getSize(): Int{
+        return flashCard.size
+    }
+    fun removeLastSide(){
+        flashCard.removeAt(flashCard.lastIndex)
+    }
 }
