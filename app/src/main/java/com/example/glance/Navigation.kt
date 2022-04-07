@@ -34,7 +34,7 @@ fun Navigation(context: Context){
             type = NavType.IntType
         })){
 
-            FlashScreen(navController = navController, num1 = it.arguments?.getInt("index")) }
+            FlashScreen(navController = navController, num1 = it.arguments?.getInt("index"), context = context) }
         }
 
 

@@ -1,6 +1,7 @@
 package com.example.glance
 
 import android.content.Context
+import android.content.Intent
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
@@ -8,6 +9,7 @@ import android.media.tv.TvContract
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.SearchView
@@ -639,10 +641,16 @@ fun ShowCard(num: Int, i: Int, context: Context) {
 
                 if (dataType == "image"){
 //                    ActivityCompat.
+
                     val bitmap = remember {
                         mutableStateOf<Bitmap?>(null)
                     }
                     var uri = flashSet[num].getCard(i).getSide(sideIndex).getUri()
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "image/*"
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, uri)
+                    }
                     Log.d("URI", "${uri.toString()}")
                     uri.let {
                         if(Build.VERSION.SDK_INT < 28){
@@ -680,7 +688,7 @@ fun ShowCard(num: Int, i: Int, context: Context) {
 }
 
 @Composable
-fun FlashScreen(navController: NavController, num1: Int?){
+fun FlashScreen(navController: NavController, num1: Int?, context: Context){
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
         .fillMaxSize()
         .verticalScroll(
@@ -690,8 +698,10 @@ fun FlashScreen(navController: NavController, num1: Int?){
         var cardIndex by remember {
             mutableStateOf(0)
         }
+
         Text(text = flashSet[num].getName(), )
-        FullCard(num = num, i = cardIndex)
+
+        FullCard(num = num, i = cardIndex, context = context)
         Row() {
             Button(onClick = {
                if (cardIndex> 0) {cardIndex-=1}
@@ -717,7 +727,7 @@ fun FlashScreen(navController: NavController, num1: Int?){
 }
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun FullCard(num:Int, i: Int) {
+fun FullCard(num:Int, i: Int, context: Context) {
     var sideIndex1 by remember {
         mutableStateOf(0)
     }
@@ -749,23 +759,40 @@ fun FullCard(num:Int, i: Int) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 var sideData = flashSet[num].getCard(i).getSide(sideIndex1).getDataType()
-                var context = LocalContext.current
                 if (sideData == "text") {
                     Text(text = flashSet[num].getCard(i).getSide(sideIndex1).getData())
                 }
-                if (sideData == "image"){
-                    var uri = flashSet[num].getCard(i).getSide(sideIndex1).getUri()
+                if (sideData == "image") {
+//                    ActivityCompat.
+
                     val bitmap = remember {
                         mutableStateOf<Bitmap?>(null)
                     }
-                    if (Build.VERSION.SDK_INT < 28){
-                        bitmap.value = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                    var uri = flashSet[num].getCard(i).getSide(sideIndex1).getUri()
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "image/*"
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, uri)
                     }
-                    else{
-                        val source = ImageDecoder.createSource(context.contentResolver, uri)
-                        bitmap.value = ImageDecoder.decodeBitmap(source)
+                    Log.d("URI", "${uri.toString()}")
+                    uri.let {
+                        if (Build.VERSION.SDK_INT < 28) {
+                            bitmap.value = MediaStore.Images
+                                .Media.getBitmap(context.contentResolver, it)
+                        } else {
+                            val source = ImageDecoder
+                                .createSource(context.contentResolver, it)
+                            bitmap.value = ImageDecoder.decodeBitmap(source)
+                        }
+
+                        Image(
+                            bitmap = bitmap.value!!.asImageBitmap(),
+                            contentDescription = null,
+                            Modifier.size(100.dp)
+                        )
+
+
                     }
-                    Image(bitmap = bitmap.value!!.asImageBitmap(), contentDescription = null, Modifier.size(200.dp))
                 }
             }
 
